@@ -1,3 +1,8 @@
 bin/
 obj/
 Properties/
+bin/Debug/a.out
+bin/Debug/output.c
+obj/x86/Debug/HelloWorld.csproj.AssemblyReference.cache
+obj/x86/Debug/HelloWorld.pdb
+bin/Debug/huh.r

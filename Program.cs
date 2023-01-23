@@ -6,10 +6,13 @@ class Program{
     public List<string> includes = new List<string>();
     public static Program program = new Program();
     public static void Main(string[] args) {
-        program.Full(args[0]);
+        string output = "";
+        output =program.Full(args[0]);
         for(int i = 0; i < program.includes.Count; i++) {
-            program.Full(program.includes[i]);
+            output = program.Full(program.includes[i]) + output;
         }
+        output = "#include <stdio.h>\n#include <stdlib.h>\n" + output;
+        File.WriteAllText("output.c",output);
     }
     public string[][] SplitString(string src){
         string[] commands = src.Replace("\t","").Replace("\n","").Split(';');
@@ -33,7 +36,11 @@ class Program{
                     includes.Add(cmd[1]);
                     break;
                 case "call":
-                    ccode += cmd[1] + "();";
+                    if (cmd.Length > 2) {
+                        ccode += cmd[1] + "(" + cmd[2]+ ");";
+                    } else {
+                        ccode += cmd[1] + "();";
+                    }
                     break;
                 case "+":
                     ccode += cmd[3] + "=" +cmd[2] + "+" + cmd[1] +";";
@@ -67,14 +74,14 @@ class Program{
                 case "var":
                     if (cmd[1] == "glob") {
                         int o;
-                        if (int.TryParse(cmd[2], out o)) {
-                            globvars.Add(cmd[1], int.Parse(cmd[2])); 
+                        if (int.TryParse(cmd[3], out o)) {
+                            globvars.Add(cmd[2], int.Parse(cmd[3])); 
                          } else {
-                            Console.WriteLine("Warning! global variable's " + cmd[1] + "assigning value isnt int");
+                            Console.WriteLine("Warning! global variable's " + cmd[2] + "assigning value isnt int");
                          }
 
                     } else {
-                        ccode += "int " + cmd[1] +"=" + cmd[2] +";";
+                        ccode += "int " + cmd[2] +"=" + cmd[3] +";";
                     }
                     break;
                 case "out":
@@ -87,7 +94,7 @@ class Program{
                     }
                     break;
                 case "in":
-                    ccode += "scanf(\"%d\"," + cmd[1] + ");";
+                    ccode += "scanf(\"%d\",&" + cmd[1] + ");";
                     break;
                 case "space":
                     ccode += "printf(\" \");";
