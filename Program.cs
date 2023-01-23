@@ -3,14 +3,15 @@ using System.IO;
 using System.Collections.Generic;
 class Program{
 
+    public List<string> includes = new List<string>();
     public static Program program = new Program();
     public static void Main(string[] args) {
-        string src = File.ReadAllText(args[0]);
-        string[][] code = program.SplitString(src);
-        program.Compile(code);
+        program.Full(args[0]);
+        for(int i = 0; i < program.includes.Count; i++) {
+            program.Full(program.includes[i]);
+        }
     }
     public string[][] SplitString(string src){
-
         string[] commands = src.Replace("\t","").Replace("\n","").Split(';');
         List<string[]> vs = new List<string[]>();
         foreach (string v in commands) {
@@ -18,12 +19,19 @@ class Program{
         }
         return vs.ToArray();
     }
-    public void Compile(string[][] cmds) {
+    public string Full(string srcpath) {
+        string src = File.ReadAllText(srcpath);
+        string[][] code = program.SplitString(src);
+        return program.Compile(code);
+    }
+    public string Compile(string[][] cmds) {
         string ccode = "";
         Dictionary<string, int> globvars = new Dictionary<string, int>();
         foreach (string[] cmd in cmds) {
             switch (cmd[0]) {
-
+                case "incl":
+                    includes.Add(cmd[1]);
+                    break;
                 case "call":
                     ccode += cmd[1] + "();";
                     break;
@@ -81,7 +89,10 @@ class Program{
                 case "in":
                     ccode += "scanf(\"%d\"," + cmd[1] + ");";
                     break;
-                default:
+                case "space":
+                    ccode += "printf(\" \");";
+                    break;
+                default :
                     ccode += "//Theres nothing!";
                     break;
             }
@@ -90,7 +101,6 @@ class Program{
         foreach (string globvar in globvars.Keys) {
             ccode = "int "+ globvar + "= " + globvars[globvar] + ";\n" + ccode;
         }
-        ccode = "#include <stdio.h>\n#include <stdlib.h>\n"+ccode;
-        File.WriteAllText("output.c", ccode);
+        return ccode;
     }
 }
